@@ -9,7 +9,6 @@ import (
 	"github.com/playwolf719/test/utils"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -40,9 +39,10 @@ func (this *SMController) Get() {
 	fmt.Println(t1)
 	fmt.Println(t2)
 	diff := t2.Sub(t1)
-
+	time_diff := float64(diff.Nanoseconds()) / 1000.0 / 1000.0
+	log.Println(time_diff)
 	smres := &SMRes{
-		Time_diff: strconv.Itoa(int(diff.Nanoseconds())/1000) + "ms",
+		Time_diff: fmt.Sprintf("%.6f ms", time_diff),
 		Res_dict:  final_res,
 	}
 	m := structs.Map(smres)
