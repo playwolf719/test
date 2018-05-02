@@ -35,35 +35,18 @@ func (this *SMController) Get() {
 	query := this.GetString("query")
 	initSM()
 	final_res := mystruct.FindContent(query, root)
-	//json_res
 	t2 := time.Now()
 
 	fmt.Println(t1)
 	fmt.Println(t2)
 	diff := t2.Sub(t1)
 
-	//smres := new(SMRes)
-	//smres.time_diff = strconv.Itoa(int(diff.Nanoseconds()))
-	//smres.res_dict = final_res
-
 	smres := &SMRes{
-		Time_diff: strconv.Itoa(int(diff.Nanoseconds())/1000 )+"ms",
+		Time_diff: strconv.Itoa(int(diff.Nanoseconds())/1000) + "ms",
 		Res_dict:  final_res,
 	}
-
-	//tmp := utils.Struct2Map(smres)
-	//log.Println(tmp)
-	//s := &Server{
-	//	Name:    "gopher",
-	//	ID:      123456,
-	//	Enabled: true,
-	//}
-
-	// => {"Name":"gopher", "ID":123456, "Enabled":true}
-	log.Println(smres)
 	m := structs.Map(smres)
 
-	log.Println(m)
 	this.Data["json"] = &m
 	this.ServeJSON()
 }
@@ -81,20 +64,12 @@ func initSM() {
 }
 
 func loadFileToTree(rel_path string) {
-	log.Println(rel_path)
 	file, err := os.Open(rel_path)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	//for scanner.Scan() {
-	//	tmp := scanner.Text()
-	//	tmp1 := strings.Split(tmp, " ")
-	//	mystruct.InsertContent(tmp1[0], root)
-	//}
-
-	//buf := make([]byte, 0, 64*1024)
 	scanner.Buffer([]byte{}, bufio.MaxScanTokenSize*10)
 	for scanner.Scan() {
 		// do your stuff

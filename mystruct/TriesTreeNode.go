@@ -59,9 +59,9 @@ func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[
 			subFindContent(sarr, index+1, node.Tmap[word], final_res)
 		}
 	} else {
-		if index > 0 {
-			getAllRes(node, strings.Join(sarr[0:index], ""), final_res)
-		}
+		//if index > 0 {
+		//	getAllRes(node, strings.Join(sarr[0:index], ""), final_res)
+		//}
 	}
 }
 
