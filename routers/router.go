@@ -1,10 +1,12 @@
 package routers
 
 import (
-	"github.com/playwolf719/test/controllers"
 	"github.com/astaxie/beego"
+	"github.com/playwolf719/test/controllers"
 )
 
 func init() {
-    beego.Router("/", &controllers.MainController{})
+	beego.Router("/", &controllers.MainController{})
+	beego.Router("/test", &controllers.TestController{})
+	beego.Router("/search_match", &controllers.SMController{})
 }
