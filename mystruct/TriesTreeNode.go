@@ -39,14 +39,24 @@ func subInsertContent(sarr []string, index int, node TriesTreeNode) {
 	subInsertContent(sarr, index+1, node.Tmap[word])
 }
 
-func FindContent(content string, root TriesTreeNode) map[string]string {
+type MidList []string
+
+func (p *MidList) Append(data string) {
+	*p = append(*p, data)
+}
+func (p *MidList) AppendList(data []string) {
+	*p = append(*p, data...)
+}
+func FindContent(content string, root TriesTreeNode) (final_res map[string]string, final_list MidList) {
 	sarr := strings.Split(content, "")
-	final_res := make(map[string]string)
-	subFindContent(sarr, 0, root, final_res)
-	return final_res
+	final_res = make(map[string]string)
+	final_list = MidList{}
+	subFindContent(sarr, 0, root, final_res, &final_list)
+	//logs.Info("[list]%+v", final_list)
+	return final_res, final_list
 }
 
-func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[string]string) {
+func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[string]string, final_list *MidList) {
 	if index >= len(sarr) {
 		return
 	}
@@ -54,9 +64,9 @@ func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[
 	_, ok := node.Tmap[word]
 	if ok == true {
 		if index == len(sarr)-1 {
-			getAllRes(node.Tmap[word], strings.Join(sarr[0:index+1], ""), final_res)
+			getAllRes(node.Tmap[word], strings.Join(sarr[0:index+1], ""), final_res, final_list)
 		} else {
-			subFindContent(sarr, index+1, node.Tmap[word], final_res)
+			subFindContent(sarr, index+1, node.Tmap[word], final_res, final_list)
 		}
 	} else {
 		//if index > 0 {
@@ -65,15 +75,22 @@ func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[
 	}
 }
 
-func getAllRes(node TriesTreeNode, prefix string, final_res map[string]string) {
-	for k, v := range node.Tmap {
-		if len(v.Tmap) == 0 {
-			tmp := prefix + k
-			if len(tmp) > 0 {
-				final_res[tmp] = tmp
+func getAllRes(node TriesTreeNode, prefix string, final_res map[string]string, final_list *MidList) {
+	if len(node.Tmap) == 0 {
+		final_res[prefix] = prefix
+		//final_list = append(final_list, prefix)
+		final_list.Append(prefix)
+	} else {
+		for k, v := range node.Tmap {
+			if len(v.Tmap) == 0 {
+				tmp := prefix + k
+				if len(tmp) > 0 {
+					//final_res[tmp] = tmp
+					final_list.Append(tmp)
+				}
+			} else {
+				getAllRes(v, prefix+k, final_res, final_list)
 			}
-		} else {
-			getAllRes(v, prefix+k, final_res)
 		}
 	}
 }
