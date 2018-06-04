@@ -5,38 +5,66 @@ import (
 	"strings"
 )
 
+type WordNode struct {
+	Word  string
+	Score int
+}
+
 type TriesTreeNode struct {
 	One_word string
-	Tmap     map[string]TriesTreeNode
+	Tmap     map[string]*TriesTreeNode
+	WordList *NodeList
+}
+
+type NodeList []WordNode
+
+func (p *NodeList) Append(node WordNode) {
+	*p = append(*p, node)
 }
 
 func TriesTreeInit(node *TriesTreeNode) {
-	node.Tmap = make(map[string]TriesTreeNode)
+	node.Tmap = make(map[string]*TriesTreeNode)
 }
 
 func SayWorld() {
 	fmt.Println("SayWorld")
 }
 
-func MakeTriesTreeNode(one_word string, Tmap map[string]TriesTreeNode) TriesTreeNode {
-	return TriesTreeNode{one_word, Tmap}
+func MakeTriesTreeNode(one_word string, Tmap map[string]*TriesTreeNode, WordList *NodeList) TriesTreeNode {
+	return TriesTreeNode{one_word, Tmap, WordList}
 }
 
-func InsertContent(content string, root TriesTreeNode) {
+func InsertContent(content string, strScore int, root TriesTreeNode) {
 	sarr := strings.Split(content, "")
-	subInsertContent(sarr, 0, root)
+	subInsertContent(sarr, 0, root, strScore)
 }
 
-func subInsertContent(sarr []string, index int, node TriesTreeNode) {
+func subInsertContent(sarr []string, index int, node TriesTreeNode, strScore int) {
 	if index >= len(sarr) {
 		return
 	}
 	word := sarr[index]
 	_, ok := node.Tmap[word]
 	if ok != true {
-		node.Tmap[word] = MakeTriesTreeNode(word, make(map[string]TriesTreeNode))
+		nodeList := NodeList{WordNode{strings.Join(sarr, ""), strScore}}
+		tmp := MakeTriesTreeNode(word, make(map[string]*TriesTreeNode), &nodeList)
+		node.Tmap[word] = &tmp
+	} else {
+		insertNode(node.Tmap[word], sarr, strScore)
 	}
-	subInsertContent(sarr, index+1, node.Tmap[word])
+	MyHeapSort(node.Tmap[word].WordList)
+	subInsertContent(sarr, index+1, *node.Tmap[word], strScore)
+}
+
+func insertNode(node *TriesTreeNode, sarr []string, strScore int) {
+	if listLen := len(*node.WordList); listLen > 0 {
+		if listLen >= 20 {
+			tmpList := *node.WordList
+			tmpList[listLen-1] = WordNode{strings.Join(sarr, ""), strScore}
+		} else {
+			node.WordList.Append(WordNode{strings.Join(sarr, ""), strScore})
+		}
+	}
 }
 
 type MidList []string
@@ -56,6 +84,29 @@ func FindContent(content string, root TriesTreeNode) (final_res map[string]strin
 	return final_res, final_list
 }
 
+func FindContentFast(content string, root TriesTreeNode) (nodeList NodeList) {
+	sarr := strings.Split(content, "")
+	index := 0
+	theNode := root
+	nodeList = NodeList{}
+	for index < len(sarr) {
+		theStr := sarr[index]
+		theNode1, ok := theNode.Tmap[theStr]
+		if index == len(sarr)-1 && ok {
+			nodeList = *theNode1.WordList
+			break
+		} else if ok {
+			index = index + 1
+			theNode = *theNode1
+			continue
+		} else {
+			break
+		}
+
+	}
+	return nodeList
+}
+
 func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[string]string, final_list *MidList) {
 	if index >= len(sarr) {
 		return
@@ -64,9 +115,9 @@ func subFindContent(sarr []string, index int, node TriesTreeNode, final_res map[
 	_, ok := node.Tmap[word]
 	if ok == true {
 		if index == len(sarr)-1 {
-			getAllRes(node.Tmap[word], strings.Join(sarr[0:index+1], ""), final_res, final_list)
+			getAllRes(*node.Tmap[word], strings.Join(sarr[0:index+1], ""), final_res, final_list)
 		} else {
-			subFindContent(sarr, index+1, node.Tmap[word], final_res, final_list)
+			subFindContent(sarr, index+1, *node.Tmap[word], final_res, final_list)
 		}
 	} else {
 		//if index > 0 {
@@ -89,7 +140,7 @@ func getAllRes(node TriesTreeNode, prefix string, final_res map[string]string, f
 					final_list.Append(tmp)
 				}
 			} else {
-				getAllRes(v, prefix+k, final_res, final_list)
+				getAllRes(*v, prefix+k, final_res, final_list)
 			}
 		}
 	}
